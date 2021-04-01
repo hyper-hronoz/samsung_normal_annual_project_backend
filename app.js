@@ -1,12 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 3000;
+const bodyParser = require('body-parser')
+const app = express();
+ 
+ 
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 // routes
 const messagesRouter = require("./router/messages_router/messagesRouter")
 const authController = require("./router/auth_router/authRouter")
-
-const app = express();
 
 app.use("/messages", messagesRouter)
 app.use("/auth", authController)
