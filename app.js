@@ -17,7 +17,7 @@ app.use("/auth", authController)
 
 const start = async () => {
     try {
-        await mongoose.connect(`mongodb+srv://hyper:W3oUwzriE8aFZOd9@cluster0.xxglm.mongodb.net/myfirstDatabase?retryWrites=true&w=majority`);
+        await mongoose.connect(`mongodb+srv://Vlad:hellosjdfksladfj@cluster0.4feya.mongodb.net/auth?retryWrites=true&w=majority`);
         app.listen(PORT, "192.168.0.15", () => {
             console.log("server is working on port " + PORT);
         })
