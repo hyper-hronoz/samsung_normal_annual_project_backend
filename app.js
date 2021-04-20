@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const bodyParser = require('body-parser')
 const app = express();
  
@@ -17,8 +17,8 @@ app.use("/auth", authController)
 
 const start = async () => {
     try {
-        await mongoose.connect(`mongodb+srv://${'hyper'}:${'W3oUwzriE8aFZOd9'}@cluster0.xxglm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`);
-        app.listen(PORT, () => {
+        await mongoose.connect(`mongodb+srv://hyper:W3oUwzriE8aFZOd9@cluster0.xxglm.mongodb.net/myfirstDatabase?retryWrites=true&w=majority`);
+        app.listen(PORT, "192.168.0.15", () => {
             console.log("server is working on port " + PORT);
         })
     } catch (e) {
