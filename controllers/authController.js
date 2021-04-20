@@ -1,5 +1,14 @@
 const User = require("../models/User")
 const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const {secret} = require('../config')
+
+const generateAccessToken = (id) => {
+    const payload = {
+        id,
+    }
+    return jwt.sign(payload, secret, {expiresIn: "24h"} )
+}
 
 class AuthController {
     async registration(req, res) {
@@ -33,7 +42,8 @@ class AuthController {
             if (!validPassword) {
                 return res.status(400).json({message: `Введен неверный пароль`})
             }
-            res.status(200).json({message: "login successful"})
+            const token = generateAccessToken(user._id)
+            return res.json({token})
         } catch (e) {
             console.log(e)
             res.status(400).json({message: 'Login error'})
