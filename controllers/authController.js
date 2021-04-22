@@ -14,14 +14,14 @@ class AuthController {
     async registration(req, res) {
         try {
             console.log(req.body)
-            const {username, password} = req.body;
+            const {username, password, gender} = req.body;
             console.log(username, password)
             const candidate = await User.findOne({username})
             if (candidate) {
                 return res.status(400).json({message: "Пользователь с таким именем уже существует"})
             }
             const hashPassword = bcrypt.hashSync(password, 7);
-            const user = new User({username: username, password: hashPassword, userInfo : {gender: "M"}})
+            const user = new User({username: username, password: hashPassword, userInfo : {gender: gender}})
             await user.save()
             return res.json({message: "Пользователь успешно зарегистрирован"})
         }
