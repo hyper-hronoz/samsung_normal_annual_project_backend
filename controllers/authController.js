@@ -21,7 +21,7 @@ class AuthController {
                 return res.status(400).json({message: "Пользователь с таким именем уже существует"})
             }
             const hashPassword = bcrypt.hashSync(password, 7);
-            const user = new User({username: username, password: hashPassword, gender: "M"})
+            const user = new User({username: username, password: hashPassword, userInfo : {gender: "M"}})
             await user.save()
             return res.json({message: "Пользователь успешно зарегистрирован"})
         }
@@ -43,10 +43,57 @@ class AuthController {
                 return res.status(400).json({message: `Введен неверный пароль`})
             }
             const token = generateAccessToken(user._id)
+            console.log(token)
             return res.json({token})
         } catch (e) {
             console.log(e)
             res.status(400).json({message: 'Login error'})
+        }
+    }
+
+    async getUserData(req, res) {
+        try {
+            const token = req.headers.authorization.split(' ')[1]
+
+            console.log("Headertoken is:", token);
+            const id = jwt.verify(token, secret).id
+
+            console.log("User Id:", id);
+            // const {} = req.body
+
+            const candidate = await User.findOne({
+                _id: id
+            })
+
+            console.log(candidate);
+
+            return res.json({
+                username : candidate.username,
+                userInfo : candidate.userInfo,
+            })
+            
+
+        } catch(e) {
+            console.log(e)
+            res.status(500).json({message: 'Internal server error'})
+        }
+    }
+
+    async updateUserData() {
+        try {
+            const {username, newUsername, newUserInfo} = req.body
+            const candidate = await User.updateOne({
+                username: username,
+                "$push": {
+                    username: newUsername,
+                    userInfo: newUserInfo
+                }
+            })
+
+            return res.json(candidate)
+        } catch(e) {
+            console.log(e)
+            res.status(500).json({message: 'Internal server error'})
         }
     }
 }
