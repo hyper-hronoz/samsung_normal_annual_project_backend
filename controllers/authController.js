@@ -10,7 +10,7 @@ const generateAccessToken = (id) => {
         id,
     }
     return jwt.sign(payload, secret, {
-        expiresIn: "24h"
+        expiresIn: "30m"
     })
 }
 
@@ -74,7 +74,7 @@ class AuthController {
             }
             const token = generateAccessToken(user._id)
             console.log(token)
-            return res.json({
+            return res.status(200).json({
                 token
             })
         } catch (e) {
@@ -104,6 +104,7 @@ class AuthController {
             return res.json({
                 username: candidate.username,
                 userInfo: candidate.userInfo,
+                userPhoto: candidate.userPhoto
             })
 
 
@@ -161,13 +162,55 @@ class AuthController {
                 }
             })
 
-            return res.sendStatus(200);
+            console.log("Данные обновлены")
+            return res.status(200).json({message: "Success"});
         } catch (e) {
             console.log(e)
             res.status(500).json({
                 message: 'Internal server error'
             })
         }
+    }
+
+    async upload(req, res) {
+        try {
+            console.log("Запрос дошел")
+            console.log(req.body)
+            const token = req.headers.authorization.split(' ')[1]
+
+            const id = jwt.verify(token, secret).id;
+
+            const {url} = req.body;
+
+            console.log("User Id:", id);
+            // const {} = req.body
+
+            const user = await User.findOne({
+                _id: id
+            })
+
+            await User.updateOne({
+                _id: id
+            }, {
+                $set: {
+                    "username" :  user.username, 
+                    "userInfo": user.userInfo,
+                    "userPhoto": url,
+                }
+            })
+
+            console.log("Данные обновлены")
+            return res.status(200).json({message: "Success"});
+        } catch (e) {
+            console.log(e)
+            res.status(500).json({
+                message: 'Internal server error'
+            })
+        }
+    }
+
+    async validateToken(req, res) {
+        return res.sendStatus(200)
     }
 }
 

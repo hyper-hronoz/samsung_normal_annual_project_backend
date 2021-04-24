@@ -2,6 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const PORT = 3000;
 const bodyParser = require('body-parser')
+const jwt = require("jsonwebtoken")
+const User = require("./models/User")
+const bcrypt = require("bcryptjs")
+
+const { secret } = require('./config')
 const app = express();
  
  
@@ -10,10 +15,14 @@ app.use(bodyParser.json())
 
 // routes
 const messagesRouter = require("./router/messages_router/messagesRouter")
-const authController = require("./router/auth_router/authRouter")
+const authRouter = require("./router/auth_router/authRouter");
+const selecUsersRouter = require("./router/select_users/selectUsers");
+const authMiddlewaree = require("./middlewaree/authMiddlewaree");
+const selectUserController = require("./controllers/selectUserController");
 
 app.use("/messages", messagesRouter)
-app.use("/auth", authController)
+app.use("/auth", authRouter)
+app.use("/find", selecUsersRouter)
 
 const start = async () => {
     try {
@@ -27,4 +36,3 @@ const start = async () => {
 }
 
 start();
-
