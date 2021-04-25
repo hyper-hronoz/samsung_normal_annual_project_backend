@@ -1,6 +1,8 @@
 const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const mongoose = require("mongoose")
+const ObjectId = mongoose.Types.ObjectId
 const {
     secret
 } = require('../config')
@@ -27,7 +29,7 @@ class UserActionController {
             await User.updateOne({
                     _id: id
                 }, {
-                    $push: {
+                    $addToSet: {
                         "userLiked": likedUser.username
                     }
             })
@@ -35,6 +37,16 @@ class UserActionController {
         } else {
             res.status(400).json({message: "такой пользователь не найден"})
         }
+    }
+
+    async getLikedUsers(req, res) {
+        const token = req.headers.authorization.split(' ')[1]
+
+        const id = jwt.verify(token, secret).id;
+
+        const candidate = await User.aggregate( [ {$match: {_id: ObjectId(id)}},{ $unset: ["_id", "password"] }] )
+
+        res.send(200).json()
 
     }
 }

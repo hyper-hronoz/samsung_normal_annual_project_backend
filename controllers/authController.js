@@ -1,7 +1,11 @@
 const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const mongoose = require("mongoose")
+const ObjectId = mongoose.Types.ObjectId;
+
 const {
+
     secret
 } = require('../config')
 
@@ -92,8 +96,11 @@ class AuthController {
             console.log("User Id:", id);
             // const {} = req.body
 
-            const candidate = await User.aggregate( [{ $unset: ["_id", "password"] }] )
+            const candidate = await User.aggregate( [ {$match : {"_id": ObjectId(id) }},{ $unset: ["_id", "password"] }] )
 
+            if (candidate == []) {
+                return res.status(401).json("пользователь не найден")
+            }
             console.log(candidate);
 
             return res.json(candidate[0])

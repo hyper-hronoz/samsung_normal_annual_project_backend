@@ -11,6 +11,9 @@ const User = new Schema({
     eyesColor: {type: String, required: false},
     height: {type: Number, required: false},
     aboutUser: {type: String, required: false},
+    vkProfile: {type: String, required: false},
+    faceBookProfile: {type: String, required: false},
+    instargramProfile: {type: String, required: false}
 })
 
 module.exports = model("User", User);

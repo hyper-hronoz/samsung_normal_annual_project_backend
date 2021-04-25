@@ -25,9 +25,13 @@ class SelectUserController {
                 { $sample: { size: 1}, 
             }, {$unset: ["_id", "password"]}]);
 
+            randomUser = randomUser[0]
+
+            console.log(randomUser.username, currentUser.username)
+
             if (userLength >= 2) {
                 if (randomUser.username != currentUser.username) {
-                    res.status(200).json(randomUser[0])
+                    res.status(200).json(randomUser)
                 } else {
                     findRandomUser();
                 }
