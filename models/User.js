@@ -4,6 +4,7 @@ const User = new Schema({
     username: {type: String, unique: true, required: true},
     password: {type: String, required: true},
     userPhoto: {type: String, required: false},
+    userLiked: {type: [], required: false},
     userInfo: {
         gender: {type: String, required: true},
         age: {type: String, require: false},

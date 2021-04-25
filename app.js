@@ -17,12 +17,14 @@ app.use(bodyParser.json())
 const messagesRouter = require("./router/messages_router/messagesRouter")
 const authRouter = require("./router/auth_router/authRouter");
 const selecUsersRouter = require("./router/select_users/selectUsers");
+const actionUsersRouter = require("./router/user_action_router/userActionRouter")
 const authMiddlewaree = require("./middlewaree/authMiddlewaree");
 const selectUserController = require("./controllers/selectUserController");
 
 app.use("/messages", messagesRouter)
 app.use("/auth", authRouter)
 app.use("/find", selecUsersRouter)
+app.use("/action", actionUsersRouter)
 
 const start = async () => {
     try {
