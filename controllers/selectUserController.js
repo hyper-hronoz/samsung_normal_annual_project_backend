@@ -12,15 +12,32 @@ class SelectUserController {
 
         const id = jwt.verify(token, secret).id;
 
-        let randomUser = await User.aggregate([{ $sample: { size: 1 } }]);
-        randomUser = randomUser[0]
-        
-
-        res.status(200).json({
-            "username": randomUser.username,
-            "userInfo": randomUser.userInfo,
-            "userPhoto": randomUser.userPhoto,
+        const currentUser = await User.findOne({
+            _id: id
         })
+
+        async function findRandomUser() {
+            const userLength = await User.countDocuments();
+
+            console.log("Documnet length", userLength);
+
+            let randomUser = await User.aggregate([
+                { $sample: { size: 1}, 
+            }, {$unset: ["_id", "password"]}]);
+
+            if (userLength >= 2) {
+                if (randomUser.username != currentUser.username) {
+                    res.status(200).json(randomUser[0])
+                } else {
+                    findRandomUser();
+                }
+            } else {
+                res.status(500).json({message: "Кандидатов нет"})
+                return
+            }
+        }
+
+        findRandomUser();
     }
 }
 

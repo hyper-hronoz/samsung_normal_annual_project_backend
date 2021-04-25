@@ -23,7 +23,6 @@ class AuthController {
                 password,
                 gender
             } = req.body;
-            console.log(username, password)
             const candidate = await User.findOne({
                 username
             })
@@ -36,9 +35,7 @@ class AuthController {
             const user = new User({
                 username: username,
                 password: hashPassword,
-                userInfo: {
-                    gender: gender
-                }
+                gender: gender
             })
             await user.save()
             return res.json({
@@ -95,18 +92,11 @@ class AuthController {
             console.log("User Id:", id);
             // const {} = req.body
 
-            const candidate = await User.findOne({
-                _id: id
-            })
+            const candidate = await User.aggregate( [{ $unset: ["_id", "password"] }] )
 
             console.log(candidate);
 
-            return res.json({
-                username: candidate.username,
-                userInfo: candidate.userInfo,
-                userPhoto: candidate.userPhoto
-            })
-
+            return res.json(candidate[0])
 
         } catch (e) {
             console.log(e)
@@ -123,42 +113,27 @@ class AuthController {
 
             const id = jwt.verify(token, secret).id;
 
-            const { userInfo, username } = req.body;
+            const { gender , age, aboutUser, height, hairColor, eyesColor, username } = req.body;
 
             console.log("User Id:", id);
             // const {} = req.body
+            console.log(req.body)
 
             const user = await User.findOne({
                 _id: id
             })
 
-            const ifPropertyExists = (property) => {
-                try {
-                    return user[property] ? user[property] : userInfo[property]
-                } catch (e) {
-                    return None
-                }
-            }
-
-            // отсеиваем null
-            const createNewSet = () => {
-                let info = {}
-
-                for (let i in userInfo) {
-                    if (ifPropertyExists(i)) {
-                        info[i] = ifPropertyExists(i)
-                    }
-                }
-
-                return info
-            }
-
             await User.updateOne({
                 _id: id
             }, {
                 $set: {
-                    "username" :  username, 
-                    "userInfo": createNewSet()
+                    "gender": gender,
+                    "age": age,
+                    "eyesColor": eyesColor,
+                    "hairColor": eyesColor,
+                    "height": height,
+                    "gender": gender,
+                    "aboutUser": aboutUser
                 }
             })
 
@@ -193,8 +168,8 @@ class AuthController {
                 _id: id
             }, {
                 $set: {
-                    "username" :  user.username, 
-                    "userInfo": user.userInfo,
+                    // "username" :  user.username, 
+                    // "userInfo": user.userInfo,
                     "userPhoto": url,
                 }
             })

@@ -5,14 +5,12 @@ const User = new Schema({
     password: {type: String, required: true},
     userPhoto: {type: String, required: false},
     userLiked: {type: [], required: false},
-    userInfo: {
-        gender: {type: String, required: true},
-        age: {type: String, require: false},
-        hairColor: {type: String, required: false},
-        eyesColor: {type: String, required: false},
-        height: {type: String, required: false},
-        aboutUser: {type: String, required: false},
-    },
+    gender: {type: String, required: true},
+    age: {type: Number, require: false},
+    hairColor: {type: String, required: false},
+    eyesColor: {type: String, required: false},
+    height: {type: Number, required: false},
+    aboutUser: {type: String, required: false},
 })
 
 module.exports = model("User", User);

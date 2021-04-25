@@ -23,28 +23,19 @@ class UserActionController {
             username: username
         })
 
-        // console.log(username, user);
+        if (likedUser) {
+            await User.updateOne({
+                    _id: id
+                }, {
+                    $push: {
+                        "userLiked": likedUser.username
+                    }
+            })
+            res.status(200).json({success: "success" })
+        } else {
+            res.status(400).json({message: "такой пользователь не найден"})
+        }
 
-        console.log(user["likedArray"].includes("hello"))
-        
-        
-        let newArray = user["userLiked"].push(Math.random() * 1000)
-        
-        console.log(newArray);
-
-        await User.updateOne({
-                _id: id
-            }, {
-                $set: {
-                    "username" :  user.username, 
-                    "userInfo": user.userInfo,
-                    "userPhoto": user.url,
-                    "userLiked": newArray
-                }
-        })
-
-
-        res.status(200).json({message: "success" })
     }
 }
 
