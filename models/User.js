@@ -12,8 +12,8 @@ const User = new Schema({
     height: {type: Number, required: false},
     aboutUser: {type: String, required: false},
     vkProfile: {type: String, required: false},
-    faceBookProfile: {type: String, required: false},
-    instargramProfile: {type: String, required: false}
+    facebookProfile: {type: String, required: false},
+    instagramProfile: {type: String, required: false}
 })
 
 module.exports = model("User", User);

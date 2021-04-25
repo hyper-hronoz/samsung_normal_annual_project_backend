@@ -44,9 +44,17 @@ class UserActionController {
 
         const id = jwt.verify(token, secret).id;
 
-        const candidate = await User.aggregate( [ {$match: {_id: ObjectId(id)}},{ $unset: ["_id", "password"] }] )
+        let user = await User.aggregate( [ {$match: {_id: ObjectId(id)}},{ $unset: ["_id", "password"] }] )
 
-        res.send(200).json()
+        user = user[0]
+
+        console.log(user)
+
+        const likedUsers = await User.find({"username": {"$in" : user.userLiked}})
+
+        console.log(likedUsers)
+
+        res.status(200).json({registeredUsers : likedUsers})
 
     }
 }

@@ -120,7 +120,7 @@ class AuthController {
 
             const id = jwt.verify(token, secret).id;
 
-            const { gender , age, aboutUser, height, hairColor, eyesColor, username } = req.body;
+            const { gender , age, aboutUser, height, hairColor, eyesColor, username, instagramProfile, facebookProfile, vkProfile} = req.body;
 
             console.log("User Id:", id);
             // const {} = req.body
@@ -137,10 +137,13 @@ class AuthController {
                     "gender": gender,
                     "age": age,
                     "eyesColor": eyesColor,
-                    "hairColor": eyesColor,
+                    "hairColor": hairColor,
                     "height": height,
                     "gender": gender,
-                    "aboutUser": aboutUser
+                    "aboutUser": aboutUser,
+                    "insargramProfile": instagramProfile,
+                    "facebookProfile": facebookProfile,
+                    "vkProfile" : vkProfile
                 }
             })
 
