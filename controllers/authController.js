@@ -14,7 +14,7 @@ const generateAccessToken = (id) => {
         id,
     }
     return jwt.sign(payload, secret, {
-        expiresIn: "30m"
+        expiresIn: "2160h"
     })
 }
 
@@ -31,7 +31,7 @@ class AuthController {
                 username
             })
             if (candidate) {
-                return res.status(400).json({
+                return res.status(409).json({
                     message: "Пользователь с таким именем уже существует"
                 })
             }
@@ -42,7 +42,7 @@ class AuthController {
                 gender: gender
             })
             await user.save()
-            return res.json({
+            return res.status(200).json({
                 message: "Пользователь успешно зарегистрирован"
             })
         } catch (error) {
