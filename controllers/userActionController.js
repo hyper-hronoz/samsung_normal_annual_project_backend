@@ -19,23 +19,44 @@ class UserActionController {
             _id: id
         })
 
-        const {username } = req.body;
+        const {
+            username
+        } = req.body;
 
-        const likedUser= await User.findOne({
+        const likedUser = await User.findOne({
             username: username
         })
 
         if (likedUser) {
-            await User.updateOne({
+            let user = await User.findOne({
+                _id: id
+            });
+
+     ;
+            if (user.userLiked.includes(likedUser.username)) {
+                await User.updateOne({
+                    _id: id
+                }, {
+                    $pull: {
+                        "userLiked": likedUser.username
+                    }
+                })
+            } else {
+                await User.updateOne({
                     _id: id
                 }, {
                     $addToSet: {
                         "userLiked": likedUser.username
                     }
+                })
+            }
+            res.status(200).json({
+                success: "success"
             })
-            res.status(200).json({success: "success" })
         } else {
-            res.status(400).json({message: "такой пользователь не найден"})
+            res.status(400).json({
+                message: "такой пользователь не найден"
+            })
         }
     }
 
@@ -44,17 +65,30 @@ class UserActionController {
 
         const id = jwt.verify(token, secret).id;
 
-        let user = await User.aggregate( [ {$match: {_id: ObjectId(id)}},{ $unset: ["_id", "password"] }] )
+        let user = await User.aggregate([{
+            $match: {
+                _id: ObjectId(id)
+            }
+        }, {
+            $unset: ["_id", "password"]
+        }])
 
         user = user[0]
 
         console.log(user)
 
-        const likedUsers = await User.find({"username": {"$in" : user.userLiked}})
+
+        const likedUsers = await User.find({
+            "username": {
+                "$in": user.userLiked
+            }
+        })
 
         console.log(likedUsers)
 
-        res.status(200).json({registeredUsers : likedUsers})
+        res.status(200).json({
+            registeredUsers: likedUsers
+        })
 
     }
 }
