@@ -141,7 +141,7 @@ class AuthController {
                     "height": height,
                     "gender": gender,
                     "aboutUser": aboutUser,
-                    "insargramProfile": instagramProfile,
+                    "instagramProfile": instagramProfile,
                     "facebookProfile": facebookProfile,
                     "vkProfile" : vkProfile
                 }
