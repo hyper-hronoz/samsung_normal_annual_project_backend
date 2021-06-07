@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const PORT = 3000;
+const PORT = 80;
 const bodyParser = require('body-parser')
 const jwt = require("jsonwebtoken")
 const User = require("./models/User")
@@ -29,7 +29,7 @@ app.use("/action", actionUsersRouter)
 const start = async () => {
     try {
         await mongoose.connect(`mongodb+srv://Vlad:hellosjdfksladfj@cluster0.4feya.mongodb.net/auth?retryWrites=true&w=majority`);
-        app.listen(PORT, "192.168.0.15", () => {
+        app.listen(PORT, () => {
             console.log("server is working on port " + PORT);
         })
     } catch (e) {
