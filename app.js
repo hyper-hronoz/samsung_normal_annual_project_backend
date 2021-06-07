@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const PORT = 80;
+const PORT = process.env.PORT || 80;
 const bodyParser = require('body-parser')
 const jwt = require("jsonwebtoken")
 const User = require("./models/User")
