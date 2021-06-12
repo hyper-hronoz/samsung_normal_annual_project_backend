@@ -1,8 +1,10 @@
-const path = require("path")
+const path = require("path");
 const busboy = require('connect-busboy');
-const fs = require("fs")
-const jwt = require("jsonwebtoken")
-const User = require("../models/User")
+const fs = require("fs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const {
 	v4: uuidv4
@@ -75,6 +77,40 @@ class UserDataController {
 			})
 		}
 	}
+
+	async getCurrentUserData(req, res) {
+		try {
+			const token = req.headers.authorization.split(' ')[1]
+
+			console.log("Headertoken is:", token);
+			const id = jwt.verify(token, secret).id
+
+			console.log("User Id:", id);
+			// const {} = req.body
+
+			const candidate = await User.aggregate([{
+				$match: {
+					"_id": ObjectId(id)
+				}
+			}, {
+				$unset: ["_id", "password"]
+			}])
+
+			if (candidate == []) {
+				return res.status(401).json("пользователь не найден")
+			}
+			console.log(candidate);
+
+			return res.status(200).json(candidate[0])
+
+		} catch (e) {
+			console.log(e)
+			res.status(500).json({
+				message: 'Internal server error'
+			})
+		}
+	}
+
 
 	async updateUserData(req, res) {
 		try {

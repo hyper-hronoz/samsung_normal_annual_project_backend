@@ -25,12 +25,9 @@ app.use(bodyParser.json())
 // routes
 const messagesRouter = require("./router/messagesRouter");
 const authRouter = require("./router/authRouter");
-const selecUsersRouter = require("./router/selectUsers");
+const selectUsersRouter = require("./router/selectUsersRouter");
 const actionUsersRouter = require("./router/userActionRouter");
 const userDataRouter = require("./router/userDataRouter");
-
-const userDataController = require("./controllers/userDataController");
-const selectUserController = require("./controllers/selectUserController");
 
 const authMiddlewaree = require("./middlewaree/authMiddlewaree");
 
@@ -41,7 +38,7 @@ const {
 app.use(busboy()); 
 app.use("/messages", messagesRouter)
 app.use("/auth", authRouter)
-app.use("/find", selecUsersRouter)
+app.use("/find", selectUsersRouter)
 app.use("/action", actionUsersRouter)
 app.use("/user-data", userDataRouter)
 

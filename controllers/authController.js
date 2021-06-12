@@ -2,7 +2,6 @@ const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const mongoose = require("mongoose")
-const ObjectId = mongoose.Types.ObjectId;
 
 const {
 
@@ -25,13 +24,15 @@ class AuthController {
             const {
                 username,
                 password,
-                email
+                email,
+                gender,
             } = req.body;
             const hashPassword = bcrypt.hashSync(password, 7);
             const user = new User({
-                username: username,
-                password: hashPassword,
-                email: email
+                username,
+                password,
+                email,
+                gender,
             })
             await user.save()
             const newUser = await User.findOne({
@@ -82,41 +83,6 @@ class AuthController {
             })
         }
     }
-
-    async getUserData(req, res) {
-        try {
-            const token = req.headers.authorization.split(' ')[1]
-
-            console.log("Headertoken is:", token);
-            const id = jwt.verify(token, secret).id
-
-            console.log("User Id:", id);
-            // const {} = req.body
-
-            const candidate = await User.aggregate([{
-                $match: {
-                    "_id": ObjectId(id)
-                }
-            }, {
-                $unset: ["_id", "password"]
-            }])
-
-            if (candidate == []) {
-                return res.status(401).json("пользователь не найден")
-            }
-            console.log(candidate);
-
-            return res.json(candidate[0])
-
-        } catch (e) {
-            console.log(e)
-            res.status(500).json({
-                message: 'Internal server error'
-            })
-        }
-    }
-
-  
 
     async validateToken(req, res) {
         return res.sendStatus(200)
