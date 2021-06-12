@@ -25,25 +25,22 @@ class AuthController {
             const {
                 username,
                 password,
-                gender
+                email
             } = req.body;
-            const candidate = await User.findOne({
-                username
-            })
-            if (candidate) {
-                return res.status(409).json({
-                    message: "Пользователь с таким именем уже существует"
-                })
-            }
             const hashPassword = bcrypt.hashSync(password, 7);
             const user = new User({
                 username: username,
                 password: hashPassword,
-                gender: gender
+                email: email
             })
             await user.save()
+            const newUser = await User.findOne({
+                username
+            })
+            const token = generateAccessToken(newUser._id)
+            console.log(username, password, email)
             return res.status(200).json({
-                message: "Пользователь успешно зарегистрирован"
+                token
             })
         } catch (error) {
             console.error(error);
@@ -56,11 +53,11 @@ class AuthController {
     async login(req, res) {
         try {
             const {
-                username,
+                email,
                 password
             } = req.body
             const user = await User.findOne({
-                username
+                email
             })
             if (!user) {
                 return res.status(400).json({
@@ -96,7 +93,13 @@ class AuthController {
             console.log("User Id:", id);
             // const {} = req.body
 
-            const candidate = await User.aggregate( [ {$match : {"_id": ObjectId(id) }},{ $unset: ["_id", "password"] }] )
+            const candidate = await User.aggregate([{
+                $match: {
+                    "_id": ObjectId(id)
+                }
+            }, {
+                $unset: ["_id", "password"]
+            }])
 
             if (candidate == []) {
                 return res.status(401).json("пользователь не найден")
@@ -113,86 +116,7 @@ class AuthController {
         }
     }
 
-    async updateUserData(req, res) {
-        try {
-
-            const token = req.headers.authorization.split(' ')[1]
-
-            const id = jwt.verify(token, secret).id;
-
-            const { gender , age, aboutUser, height, hairColor, eyesColor, username, instagramProfile, facebookProfile, vkProfile} = req.body;
-
-            console.log("User Id:", id);
-            // const {} = req.body
-            console.log(req.body)
-
-            const user = await User.findOne({
-                _id: id
-            })
-
-            await User.updateOne({
-                _id: id
-            }, {
-                $set: {
-                    "gender": gender,
-                    "age": age,
-                    "eyesColor": eyesColor,
-                    "hairColor": hairColor,
-                    "height": height,
-                    "gender": gender,
-                    "aboutUser": aboutUser,
-                    "instagramProfile": instagramProfile,
-                    "facebookProfile": facebookProfile,
-                    "vkProfile" : vkProfile
-                }
-            })
-
-            console.log("Данные обновлены")
-            return res.status(200).json({message: "Success"});
-        } catch (e) {
-            console.log(e)
-            res.status(500).json({
-                message: 'Internal server error'
-            })
-        }
-    }
-
-    async upload(req, res) {
-        try {
-            console.log("Запрос дошел")
-            console.log(req.body)
-            const token = req.headers.authorization.split(' ')[1]
-
-            const id = jwt.verify(token, secret).id;
-
-            const {url} = req.body;
-
-            console.log("User Id:", id);
-            // const {} = req.body
-
-            const user = await User.findOne({
-                _id: id
-            })
-
-            await User.updateOne({
-                _id: id
-            }, {
-                $set: {
-                    // "username" :  user.username, 
-                    // "userInfo": user.userInfo,
-                    "userPhoto": url,
-                }
-            })
-
-            console.log("Данные обновлены")
-            return res.status(200).json({message: "Success"});
-        } catch (e) {
-            console.log(e)
-            res.status(500).json({
-                message: 'Internal server error'
-            })
-        }
-    }
+  
 
     async validateToken(req, res) {
         return res.sendStatus(200)

@@ -1,40 +1,59 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const PORT = process.env.PORT || 80;
 const bodyParser = require('body-parser')
 const jwt = require("jsonwebtoken")
 const User = require("./models/User")
 const bcrypt = require("bcryptjs")
+const fs = require("fs")
+const busboy = require("connect-busboy")
+const path = require("path")
 
-const { secret } = require('./config')
+const {
+  domain,
+  secret,
+  PORT
+} = require('./config')
 const app = express();
- 
- 
-app.use(bodyParser.urlencoded({ extended: false }))
+
+
+app.use('/static', express.static(path.join(__dirname, 'public')))
+app.use(bodyParser.urlencoded({
+  extended: false
+}))
 app.use(bodyParser.json())
 
 // routes
-const messagesRouter = require("./router/messages_router/messagesRouter")
-const authRouter = require("./router/auth_router/authRouter");
-const selecUsersRouter = require("./router/select_users/selectUsers");
-const actionUsersRouter = require("./router/user_action_router/userActionRouter")
-const authMiddlewaree = require("./middlewaree/authMiddlewaree");
+const messagesRouter = require("./router/messagesRouter");
+const authRouter = require("./router/authRouter");
+const selecUsersRouter = require("./router/selectUsers");
+const actionUsersRouter = require("./router/userActionRouter");
+const userDataRouter = require("./router/userDataRouter");
+
+const userDataController = require("./controllers/userDataController");
 const selectUserController = require("./controllers/selectUserController");
 
+const authMiddlewaree = require("./middlewaree/authMiddlewaree");
+
+const {
+  pathToFileURL
+} = require("url");
+
+app.use(busboy()); 
 app.use("/messages", messagesRouter)
 app.use("/auth", authRouter)
 app.use("/find", selecUsersRouter)
 app.use("/action", actionUsersRouter)
+app.use("/user-data", userDataRouter)
 
 const start = async () => {
-    try {
-        await mongoose.connect(`mongodb+srv://Vlad:hellosjdfksladfj@cluster0.4feya.mongodb.net/auth?retryWrites=true&w=majority`);
-        app.listen(PORT, () => {
-            console.log("server is working on port " + PORT);
-        })
-    } catch (e) {
-        console.log(e);
-    }
+  try {
+    await mongoose.connect(`mongodb+srv://Vlad:hellosjdfksladfj@cluster0.4feya.mongodb.net/auth?retryWrites=true&w=majority`);
+    app.listen(PORT, domain, () => {
+      console.log("server is working on port " + PORT);
+    })
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 start();
