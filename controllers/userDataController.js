@@ -115,6 +115,8 @@ class UserDataController {
 	async updateUserData(req, res) {
 		try {
 
+			console.log("запрос вроде бы как дошел")
+
 			const token = req.headers.authorization.split(' ')[1]
 
 			const id = jwt.verify(token, secret).id;
@@ -122,7 +124,7 @@ class UserDataController {
 			const {
 				gender,
 				age,
-				aboutUser,
+				about,
 				height,
 				hairColor,
 				eyesColor,
@@ -150,7 +152,7 @@ class UserDataController {
 					"hairColor": hairColor,
 					"height": height,
 					"gender": gender,
-					"aboutUser": aboutUser,
+					"about": about,
 					"instagramProfile": instagramProfile,
 					"facebookProfile": facebookProfile,
 					"vkProfile": vkProfile

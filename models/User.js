@@ -12,7 +12,7 @@ const User = new Schema({
     hairColor: {type: String, required: false},
     eyesColor: {type: String, required: false},
     height: {type: Number, required: false},
-    aboutUser: {type: String, required: false},
+    about: {type: String, required: false},
     vkProfile: {type: String, required: false},
     facebookProfile: {type: String, required: false},
     instagramProfile: {type: String, required: false},
