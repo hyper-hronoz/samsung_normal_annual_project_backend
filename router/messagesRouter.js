@@ -1,19 +1,7 @@
-const router = require("express").Router()
+const router = require("express").Router();
+const controller = require("../controllers/messangerController")
+const authMiddlewaree = require("../middlewaree/authMiddlewaree")
 
-router.get("/", (req, res)=> {
-    res.send("Hello");
-})
-
-router.post("/", (req, res) => {
-
-})
-
-router.put("/", (req, res) => {
-
-})
-
-router.delete("/", (req, res) => {
-
-})
+router.post('/room', authMiddlewaree, controller.createChatRoom);
 
 module.exports = router

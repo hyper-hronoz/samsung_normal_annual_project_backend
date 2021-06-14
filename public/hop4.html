@@ -15,32 +15,29 @@
 	<script src="http://localhost/socket.io/socket.io.js"></script>
 	<script>
 		// const socket = io.connect("http://localhost:3000", { transports: ['websocket']})
-		
+
 		const socket = io("http://localhost");
 
 		socket.emit("create-chat", "Hello world");
 
-		const users = ["cat", "dog", "duck", "dragon"];
+		let users = ['cat', "dog", "duck", "dragon"];
 
 		let data = {
 			userFrom: users[0],
-			userTo: users[1],
-			message: "Hello it is message from first chat"
+			userTo: users[3],
+			message: "33333333333333 zopea Hello it is message from third 333333 chat"
 		}
 
 		function sendMessage() {
 			socket.emit("message", data)
 		}
 
-		socket.emit("begin-chat", {userFrom: users[0], userTo: users[1]})
-
+		socket.emit("begin-chat", {userFrom: users[0], userTo: users[3]})
 
 		// handle the event sent with socket.send()
 		socket.on("message", (message) => {
 			console.log(message);
 		})
-
-
 	</script>
 </body>
 
