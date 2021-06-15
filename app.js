@@ -84,7 +84,6 @@ io.on("connection", socket => {
         "_id": mongoose.Types.ObjectId(chatRoom.users[0])
       })
 
-      console.log(user1);
       if (user1) {
         users.push({
           _id: chatRoom.users[0],
@@ -96,7 +95,6 @@ io.on("connection", socket => {
         "_id": mongoose.Types.ObjectId(chatRoom.users[1])
       })
 
-      console.log(user2);
       if (user2) {
         users.push({
           _id: chatRoom.users[1],
@@ -104,21 +102,39 @@ io.on("connection", socket => {
         })
       }
 
-      if (users.length == 2) {
-        socket.users = users
-      }
+      socket.users = users
+
+      socket.join(socket.room)
     }
   })
 
   socket.on("message", (data) => {
-    console.log(socket.room);
-    console.log(data)
+    data = JSON.parse(data)
+
+    console.log(socket.users);
+
+    let username = "";
+
     for (let i of socket.users) {
-      socket.to(socket.name).emit("message", message)
+      if (i._id != data.userId) {
+        username = i.username;
+        break;
+      }
     }
+
+    if (data.message.trim() != "") {
+      console.log("socket name is", socket.name);
+      let send = {
+        username: username,
+        message: data.message
+      }
+      console.log(send);
+      socket.to(socket.name).emit("message", send)
+    }
+
   })
 
-});
+})
 
 const start = async () => {
   try {
