@@ -8,6 +8,8 @@ const fs = require("fs")
 const busboy = require("connect-busboy")
 const path = require("path")
 const ChatRoom = require("./models/ChatRoom")
+const Message = require("./models/Message")
+const moment = require('moment');
 // const WebSocketServer = require("ws").Server;
 // const http = require("http");
 const app = express();
@@ -18,15 +20,12 @@ const io = require("socket.io")(httpServer, {
     method: ["GET", "POST"]
   }
 });
-// const server = http.createServer(app);
-
 
 const {
   domain,
   secret,
   PORT
 } = require('./config')
-// const expressWs = require('express-ws')(app);
 
 app.use('/static', express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.urlencoded({
@@ -34,13 +33,11 @@ app.use(bodyParser.urlencoded({
 }))
 app.use(bodyParser.json())
 
-// routes
 const messagesRouter = require("./router/messagesRouter");
 const authRouter = require("./router/authRouter");
 const selectUsersRouter = require("./router/selectUsersRouter");
 const actionUsersRouter = require("./router/userActionRouter");
 const userDataRouter = require("./router/userDataRouter");
-// const userNotificationsRouter = require("./router/notificationsRouter")
 const authMiddlewaree = require("./middlewaree/authMiddlewaree");
 
 app.get("/", (req, res) => {
@@ -54,7 +51,6 @@ app.use("/auth", authRouter)
 app.use("/find", selectUsersRouter)
 app.use("/action", actionUsersRouter)
 app.use("/user-data", userDataRouter)
-
 
 io.on("connection", socket => {
   console.log("works");
@@ -108,8 +104,10 @@ io.on("connection", socket => {
     }
   })
 
-  socket.on("message", (data) => {
+  socket.on("message", async (data) => {
     data = JSON.parse(data)
+
+    console.log(data);
 
     console.log(socket.users);
 
@@ -122,18 +120,57 @@ io.on("connection", socket => {
       }
     }
 
-    if (data.message.trim() != "") {
-      console.log("socket name is", socket.name);
-      let send = {
+    let send = {}
+
+    if (data.image) {
+      send = {
+        username: username,
+        image: data.image
+      }
+    } else if (data.message.trim() == "") {
+      return socket.emit("error", "message is empty")
+    } else if (data.message) {
+      send = {
         username: username,
         message: data.message
       }
-      console.log(send);
-      socket.to(socket.name).emit("message", send)
     }
 
-  })
+    console.log("socket name is", socket.name);
+    console.log(send);
 
+    if (data.image) {
+
+      await ChatRoom.updateOne({
+        "_id": mongoose.Types.ObjectId(socket.name)
+      }, {
+        $addToSet: {
+          "messages": {
+            username: username,
+            image: data.image,
+            date: moment().format()
+          }
+        }
+      })
+    } else if (data.message) {
+
+      await ChatRoom.updateOne({
+        "_id": mongoose.Types.ObjectId(socket.name)
+      }, {
+        $addToSet: {
+          "messages": {
+            username: username,
+            message: data.message,
+            date: moment().format()
+          }
+        }
+      })
+    }
+
+    console.log(send);
+
+    socket.to(socket.name).emit("message", send)
+  })
 })
 
 const start = async () => {
