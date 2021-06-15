@@ -29,8 +29,8 @@ class AuthController {
             } = req.body;
             const hashPassword = bcrypt.hashSync(password, 7);
             const user = new User({
-                username,
-                password,
+                username: username,
+                password: hashPassword,
                 email,
                 gender,
             })
@@ -39,7 +39,6 @@ class AuthController {
                 username
             })
             const token = generateAccessToken(newUser._id)
-            console.log(username, password, email)
             return res.status(200).json({
                 token
             })
@@ -57,6 +56,7 @@ class AuthController {
                 email,
                 password
             } = req.body
+            console.log(email, password)
             const user = await User.findOne({
                 email
             })

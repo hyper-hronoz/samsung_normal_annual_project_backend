@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs")
 const fs = require("fs")
 const busboy = require("connect-busboy")
 const path = require("path")
+const ChatRoom = require("./models/ChatRoom")
 // const WebSocketServer = require("ws").Server;
 // const http = require("http");
 const app = express();
@@ -55,93 +56,74 @@ app.use("/action", actionUsersRouter)
 app.use("/user-data", userDataRouter)
 
 
-// let users = ['cat', "dog", "duck", "dragon"]
+io.on("connection", socket => {
+  console.log("works");
 
-// let rooms = [{
-//     name: "abracadabra",
-//     users: [users[0], users[1]],
-//     messages: [{
-//         message_from: users[0],
-//         message_data: "hello it is message"
-//       },
-//       {
-//         message_from: users[1],
-//         message_data: "hello it is message from user 2"
-//       }
-//     ]
-//   },
-//   {
-//     name: "otherrrrrr room",
-//     users: [users[0], users[3]],
-//     messages: [{
-//         message_from: users[0],
-//         message_data: "hello it is message from other room"
-//       },
-//       {
-//         message_from: users[2],
-//         message_data: "hello it is message from user 2 from other room"
-//       }
-//     ]
-//   },
-//   {
-//     name: "other room",
-//     users: [users[0], users[2]],
-//     messages: [{
-//         message_from: users[0],
-//         message_data: "hello it is message from other room"
-//       },
-//       {
-//         message_from: users[2],
-//         message_data: "hello it is message from user 2 from other room"
-//       }
-//     ]
-//   }
-// ]
+  socket.on("begin-chat", async (data) => {
+    data = JSON.parse(data)
 
-// io.on("connection", socket => {
-//   console.log("works");
+    const currentUserId = jwt.verify(data["jwt"], secret).id
 
-//   // socket.on('message', (room, message) => {
-//   //   socket.to(room).broadcast.emit('chat-message', { message: message, name: rooms[room].users[socket.id] })
-//   // })
+    const chatterId = data.id;
 
-//   socket.on("begin-chat", (data) => {
-//     for (let i of rooms) {
-//       if (i.users.includes(data.userTo) && i.users.includes(data.userFrom)) {
-//         socket.name = i.name
-//         socket.join(i.name);
-//       }
-//     }
-//   })
+    const chatRoom = await ChatRoom.findOne({
+      "users": {
+        $all: [currentUserId, chatterId],
+      },
+    })
 
-//   socket.on("message", (data) => {
-//     // console.log("I recived a message");
-//     // console.log("Hello if fount users", i.name);
-//     console.log(data["message"]);
-//     console.log(socket.name);
-//     socket.to(socket.name).emit("message", data["message"])
-//   })
+    console.log("Room id is:", chatRoom._id);
 
-//   // socket.on("create-chat", (userFrom, userTo) => {
-//   //   if (!(users.includes(userTo) && users.includes(userFrom))) {
-//   //       return;
-//   //   }
-//   //   for (let i of rooms) {
-//   //     if (i.users.includes(userFrom) && i.users.includes(userTo)) {
-//   //       socket.join(i.name);
-//   //       return;
-//   //     }
-//   //   }
+    const users = []
 
+    if (chatRoom) {
+      socket.name = socket.join(chatRoom._id);
+      socket.room = socket.chatRoom
 
-//   // })
+      const user1 = await User.findOne({
+        "_id": mongoose.Types.ObjectId(chatRoom.users[0])
+      })
 
-// });
+      console.log(user1);
+      if (user1) {
+        users.push({
+          _id: chatRoom.users[0],
+          username: user1.username
+        })
+      }
+
+      const user2 = await User.findOne({
+        "_id": mongoose.Types.ObjectId(chatRoom.users[1])
+      })
+
+      console.log(user2);
+      if (user2) {
+        users.push({
+          _id: chatRoom.users[1],
+          username: user2.username
+        })
+      }
+
+      if (users.length == 2) {
+        socket.users = users
+      }
+    }
+  })
+
+  socket.on("message", (data) => {
+    console.log(socket.room);
+    console.log(data)
+    for (let i of socket.users) {
+      socket.to(socket.name).emit("message", message)
+    }
+  })
+
+});
 
 const start = async () => {
   try {
     await mongoose.connect(`mongodb+srv://Vlad:hellosjdfksladfj@cluster0.4feya.mongodb.net/auth?retryWrites=true&w=majority`);
-    httpServer.listen(PORT, () => {
+    httpServer.listen(PORT, domain, () => {
       console.log("server is working on port " + PORT);
     })
   } catch (e) {
@@ -150,8 +132,3 @@ const start = async () => {
 }
 
 start();
-// var wss = new WebSocketServer({server: server});
-
-// wss.on('open', function open() {
-//   ws.send('something');
-// });

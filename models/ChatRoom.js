@@ -5,4 +5,4 @@ const ChatRoom = new Schema({
     isGroup: {type: Boolean, required: true}
 })
 
-module.exports = model("ChatRoom", ChatRoom, "chat_rooms");
+module.exports = model("ChatRoom", ChatRoom);
