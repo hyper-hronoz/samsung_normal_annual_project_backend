@@ -10,6 +10,7 @@ const path = require("path")
 const ChatRoom = require("./models/ChatRoom")
 const Message = require("./models/Message")
 const moment = require('moment');
+ObjectId = require('mongodb').ObjectID;
 // const WebSocketServer = require("ws").Server;
 // const http = require("http");
 const app = express();
@@ -124,18 +125,31 @@ io.on("connection", socket => {
 
     let chatRoomId = await mongoose.Types.ObjectId(chatRoom.id).toString()
     await socket.join(chatRoomId);
+    console.log(chatRoom._id);
     if (chatRoom) {
-      console.log("Gettin messages");
       const messages = await ChatRoom.aggregate([{
-        $project: {
-          array: {
-            $slice: ["$messages", paginationNumber * 10 + messagesWrote, 5]
+          $match: {
+            "_id": ObjectId(chatRoomId) 
+          }
+        },
+        {
+          $project: {
+            array: {
+              $slice: ["$messages", 0, 5]
+            }
           }
         }
-      }])
+      ])
 
-      console.log(socket.rooms);
-      console.log("Send messages room id: ", chatRoom._id);
+      for (let i = 0; i < messages[0].array.length; i++) {
+        console.log(messages[0].array[i]);
+        if (messages[0].array[i].userFrom == currentUserId) {
+          messages[0].array[i]["isUsers"] = true;
+        } else {
+          messages[0].array[i]["isUsers"] = false;
+        }
+      }
+
       console.log(messages[0].array);
       await socket.emit("get-previous-messages", messages[0].array)
     }
@@ -157,7 +171,7 @@ io.on("connection", socket => {
 
 
       if (chatRoom) {
-        let chatRoomId = mongoose.Types.ObjectId(chatRoom.id).toString()
+        let chatRoomId = mongoose.Types.ObjectId(chatRoom.id).toString();
         console.log("Gettin messages");
         console.log(socket.rooms);
 
@@ -212,27 +226,33 @@ io.on("connection", socket => {
 
         console.log(send);
 
-        if (data.image) {
 
-          ChatRoom.updateOne({
-            "_id": mongoose.Types.ObjectId(socket.name)
+        if (data.image) {
+          console.log("on image", chatRoom._id);
+
+          await ChatRoom.updateOne({
+            "_id": ObjectId(chatRoomId)
           }, {
             $addToSet: {
               "messages": {
                 username: username,
+                userFrom: currentUserId,
                 image: data.image,
                 date: moment().format()
               }
             }
           })
         } else if (data.message) {
+          console.log("on message", chatRoom._id);
+          console.log(mongoose.Types.ObjectId(chatRoomId));
 
-          ChatRoom.updateOne({
-            "_id": mongoose.Types.ObjectId(socket.name)
+          await ChatRoom.updateOne({
+            "_id": ObjectId(chatRoomId)
           }, {
             $addToSet: {
               "messages": {
                 username: username,
+                userFrom: currentUserId,
                 message: data.message,
                 date: moment().format()
               }
@@ -242,7 +262,6 @@ io.on("connection", socket => {
 
         console.log(send);
 
-        console.log("Sending to room", socket.name);
         socket.to(chatRoomId).emit("message", send)
       }
     } catch (e) {
