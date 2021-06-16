@@ -52,15 +52,68 @@ app.use("/find", selectUsersRouter)
 app.use("/action", actionUsersRouter)
 app.use("/user-data", userDataRouter)
 
+
 io.on("connection", socket => {
   console.log("works");
 
-  socket.on("begin-chat", async (data) => {
+  // socket.on("begin-chat", async (data) => {
+  //   data = await JSON.parse(data)
+
+  //   const currentUserId = await jwt.verify(data["jwt"], secret).id
+
+  //   const chatterId = data.id;
+
+  //   const chatRoom = await ChatRoom.findOne({
+  //     "users": {
+  //       $all: [currentUserId, chatterId],
+  //     },
+  //   })
+
+  //   const users = []
+
+  //   if (chatRoom) {
+  //     socket.join(toString(socket.name));
+
+  //     socket.name = chatRoom._id;
+
+  //     console.log("Joining to room", socket.name);
+
+
+  //     const user1 = await User.findOne({
+  //       "_id": mongoose.Types.ObjectId(chatRoom.users[0])
+  //     })
+
+  //     if (user1) {
+  //       users.push({
+  //         _id: chatRoom.users[0],
+  //         username: user1.username
+  //       })
+  //     }
+
+  //     const user2 = await User.findOne({
+  //       "_id": mongoose.Types.ObjectId(chatRoom.users[1])
+  //     })
+
+  //     if (user2) {
+  //       users.push({
+  //         _id: chatRoom.users[1],
+  //         username: user2.username
+  //       })
+  //     }
+
+  //     socket.users = users
+  //   }
+  // })
+
+  socket.on("get-previous-messages", async (data) => {
     data = JSON.parse(data)
+    console.log(data);
+    let paginationNumber = await data.pagination;
+    let messagesWrote = await data.messagesWrote
 
-    const currentUserId = jwt.verify(data["jwt"], secret).id
+    const currentUserId = await jwt.verify(data["jwt"], secret).id
 
-    const chatterId = data.id;
+    const chatterId = await data.id;
 
     const chatRoom = await ChatRoom.findOne({
       "users": {
@@ -68,108 +121,133 @@ io.on("connection", socket => {
       },
     })
 
-    console.log("Room id is:", chatRoom._id);
 
-    const users = []
-
+    let chatRoomId = await mongoose.Types.ObjectId(chatRoom.id).toString()
+    await socket.join(chatRoomId);
     if (chatRoom) {
-      socket.name = socket.join(chatRoom._id);
-      socket.room = socket.chatRoom
+      console.log("Gettin messages");
+      const messages = await ChatRoom.aggregate([{
+        $project: {
+          array: {
+            $slice: ["$messages", paginationNumber * 10 + messagesWrote, 5]
+          }
+        }
+      }])
 
-      const user1 = await User.findOne({
-        "_id": mongoose.Types.ObjectId(chatRoom.users[0])
-      })
-
-      if (user1) {
-        users.push({
-          _id: chatRoom.users[0],
-          username: user1.username
-        })
-      }
-
-      const user2 = await User.findOne({
-        "_id": mongoose.Types.ObjectId(chatRoom.users[1])
-      })
-
-      if (user2) {
-        users.push({
-          _id: chatRoom.users[1],
-          username: user2.username
-        })
-      }
-
-      socket.users = users
-
-      socket.join(socket.room)
+      console.log(socket.rooms);
+      console.log("Send messages room id: ", chatRoom._id);
+      console.log(messages[0].array);
+      await socket.emit("get-previous-messages", messages[0].array)
     }
   })
 
   socket.on("message", async (data) => {
-    data = JSON.parse(data)
+    try {
+      data = await JSON.parse(data)
 
-    console.log(data);
+      const currentUserId = await jwt.verify(data["jwt"], secret).id
 
-    console.log(socket.users);
+      const chatterId = data.id;
 
-    let username = "";
+      const chatRoom = await ChatRoom.findOne({
+        "users": {
+          $all: [currentUserId, chatterId],
+        },
+      })
 
-    for (let i of socket.users) {
-      if (i._id != data.userId) {
-        username = i.username;
-        break;
-      }
-    }
 
-    let send = {}
+      if (chatRoom) {
+        let chatRoomId = mongoose.Types.ObjectId(chatRoom.id).toString()
+        console.log("Gettin messages");
+        console.log(socket.rooms);
 
-    if (data.image) {
-      send = {
-        username: username,
-        image: data.image
-      }
-    } else if (data.message.trim() == "") {
-      return socket.emit("error", "message is empty")
-    } else if (data.message) {
-      send = {
-        username: username,
-        message: data.message
-      }
-    }
+        const users = []
 
-    console.log("socket name is", socket.name);
-    console.log(send);
+        const user1 = await User.findOne({
+          "_id": mongoose.Types.ObjectId(chatRoom.users[0])
+        })
 
-    if (data.image) {
+        if (user1) {
+          users.push({
+            _id: chatRoom.users[0],
+            username: user1.username
+          })
+        }
 
-      await ChatRoom.updateOne({
-        "_id": mongoose.Types.ObjectId(socket.name)
-      }, {
-        $addToSet: {
-          "messages": {
-            username: username,
-            image: data.image,
-            date: moment().format()
+        const user2 = await User.findOne({
+          "_id": mongoose.Types.ObjectId(chatRoom.users[1])
+        })
+
+        if (user2) {
+          users.push({
+            _id: chatRoom.users[1],
+            username: user2.username
+          })
+        }
+
+        let username = "";
+
+        for (let i of users) {
+          if (i._id != data.userId) {
+            username = i.username;
+            break;
           }
         }
-      })
-    } else if (data.message) {
 
-      await ChatRoom.updateOne({
-        "_id": mongoose.Types.ObjectId(socket.name)
-      }, {
-        $addToSet: {
-          "messages": {
+        let send = {}
+
+        if (data.image) {
+          send = {
             username: username,
-            message: data.message,
-            date: moment().format()
+            image: data.image
+          }
+        } else if (data.message.trim() == "") {
+          return socket.emit("error", "message is empty")
+        } else if (data.message) {
+          send = {
+            username: username,
+            message: data.message
           }
         }
-      })
+
+        console.log(send);
+
+        if (data.image) {
+
+          ChatRoom.updateOne({
+            "_id": mongoose.Types.ObjectId(socket.name)
+          }, {
+            $addToSet: {
+              "messages": {
+                username: username,
+                image: data.image,
+                date: moment().format()
+              }
+            }
+          })
+        } else if (data.message) {
+
+          ChatRoom.updateOne({
+            "_id": mongoose.Types.ObjectId(socket.name)
+          }, {
+            $addToSet: {
+              "messages": {
+                username: username,
+                message: data.message,
+                date: moment().format()
+              }
+            }
+          })
+        }
+
+        console.log(send);
+
+        console.log("Sending to room", socket.name);
+        socket.to(chatRoomId).emit("message", send)
+      }
+    } catch (e) {
+      console.error(e);
     }
-
-    console.log(send);
-
-    socket.to(socket.name).emit("message", send)
   })
 })
 
@@ -179,6 +257,7 @@ const start = async () => {
     httpServer.listen(PORT, domain, () => {
       console.log("server is working on port " + PORT);
     })
+
   } catch (e) {
     console.log(e);
   }
