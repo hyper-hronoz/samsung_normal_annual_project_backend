@@ -21,7 +21,9 @@ class UserDataController {
 			const id = jwt.verify(token, secret).id;
 			var fstream;
 			const imageName = uuidv4() + ".png";
+
 			req.pipe(req.busboy);
+
 			req.busboy.on('field', function (key, value, keyTruncated, valueTruncated) {
 				console.log(key, value);
 			});
