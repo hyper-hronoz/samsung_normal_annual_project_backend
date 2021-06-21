@@ -22,42 +22,45 @@ class UserDataController {
 			var fstream;
 			const imageName = uuidv4() + ".png";
 
-			await req.pipe(req.busboy);
+			req.pipe(req.busboy);
 
-			await req.busboy.on('field', function (key, value, keyTruncated, valueTruncated) {
+			req.busboy.on('field', function (key, value, keyTruncated, valueTruncated) {
 				console.log(key, value);
 			});
 
-			await req.busboy.on('file', function (fieldname, file, filename) {
+			req.busboy.on('file', function (fieldname, file, filename) {
 				console.log("Uploading: " + filename);
 				var saveTo = path.join("./public/uploads/profiles", imageName);
 				console.log('Uploading: ' + saveTo);
 				file.pipe(fs.createWriteStream(saveTo));
 			});
 
-			await req.busboy.on('finish', function () {
+			req.busboy.on('finish', function () {
 				console.log('Upload complete');
+
+				await User.updateOne({
+					_id: id
+				}, {
+					$set: {
+						// "username" :  user.username, 
+						// "userInfo": user.userInfo,
+						"userPhoto": "http://" + req.hostname + "/static/uploads/profiles/" + imageName,
+					}
+				})
+
+				const user = await User.findOne({
+					_id: id
+				})
+
+				return res.status(200).json({
+					message: "Success"
+				});
 			});
 
-			const user = await User.findOne({
-				_id: id
-			})
 
 			console.log("Request hostname is: ", req.hostname);
 
-			await User.updateOne({
-				_id: id
-			}, {
-				$set: {
-					// "username" :  user.username, 
-					// "userInfo": user.userInfo,
-					"userPhoto": "http://" + req.hostname + "/static/uploads/profiles/" + imageName,
-				}
-			})
 
-			return await res.status(200).json({
-				message: "Success"
-			});
 
 			// console.log("Запрос дошел")
 			// console.log(req.body)
