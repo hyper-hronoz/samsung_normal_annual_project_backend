@@ -35,7 +35,7 @@ class UserDataController {
 				file.pipe(fs.createWriteStream(saveTo));
 			});
 
-			req.busboy.on('finish', function () {
+			req.busboy.on('finish', async function () {
 				console.log('Upload complete');
 
 				await User.updateOne({
