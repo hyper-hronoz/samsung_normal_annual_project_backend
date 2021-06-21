@@ -10,7 +10,6 @@ const {
 	v4: uuidv4
 } = require('uuid');
 const {
-	domain,
 	secret
 } = require("../config")
 
@@ -26,12 +25,14 @@ class UserDataController {
 			req.busboy.on('field', function (key, value, keyTruncated, valueTruncated) {
 				console.log(key, value);
 			});
+
 			req.busboy.on('file', function (fieldname, file, filename) {
 				console.log("Uploading: " + filename);
 				var saveTo = path.join("./public/uploads/profiles", imageName);
 				console.log('Uploading: ' + saveTo);
 				file.pipe(fs.createWriteStream(saveTo));
 			});
+
 			req.busboy.on('finish', function () {
 				console.log('Upload complete');
 			});
@@ -40,6 +41,7 @@ class UserDataController {
 				_id: id
 			})
 
+			console.log("Request hostname is: ", req.hostname);
 
 			await User.updateOne({
 				_id: id
@@ -47,7 +49,7 @@ class UserDataController {
 				$set: {
 					// "username" :  user.username, 
 					// "userInfo": user.userInfo,
-					"userPhoto": "http://" + domain + "/static/uploads/profiles/" + imageName,
+					"userPhoto": "http://" + req.hostname + "/static/uploads/profiles/" + imageName,
 				}
 			})
 
