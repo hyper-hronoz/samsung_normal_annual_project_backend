@@ -22,20 +22,20 @@ class UserDataController {
 			var fstream;
 			const imageName = uuidv4() + ".png";
 
-			req.pipe(req.busboy);
+			await req.pipe(req.busboy);
 
-			req.busboy.on('field', function (key, value, keyTruncated, valueTruncated) {
+			await req.busboy.on('field', function (key, value, keyTruncated, valueTruncated) {
 				console.log(key, value);
 			});
 
-			req.busboy.on('file', function (fieldname, file, filename) {
+			await req.busboy.on('file', function (fieldname, file, filename) {
 				console.log("Uploading: " + filename);
 				var saveTo = path.join("./public/uploads/profiles", imageName);
 				console.log('Uploading: ' + saveTo);
 				file.pipe(fs.createWriteStream(saveTo));
 			});
 
-			req.busboy.on('finish', function () {
+			await req.busboy.on('finish', function () {
 				console.log('Upload complete');
 			});
 
