@@ -273,7 +273,7 @@ io.on("connection", socket => {
 const start = async () => {
   try {
     await mongoose.connect(`mongodb+srv://Vlad:hellosjdfksladfj@cluster0.4feya.mongodb.net/auth?retryWrites=true&w=majority`);
-    httpServer.listen(PORT, domain, () => {
+    httpServer.listen(PORT, () => {
       console.log("server is working on port " + PORT);
     })
 
