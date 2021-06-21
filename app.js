@@ -135,7 +135,7 @@ io.on("connection", socket => {
         {
           $project: {
             array: {
-              $slice: ["$messages", 0, 5]
+              $slice: ["$messages", 0, 1000]
             }
           }
         }
