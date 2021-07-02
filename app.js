@@ -122,9 +122,10 @@ io.on("connection", socket => {
       },
     })
 
-
     let chatRoomId = await mongoose.Types.ObjectId(chatRoom.id).toString()
+
     await socket.join(chatRoomId);
+
     console.log(chatRoom._id);
     if (chatRoom) {
       const messages = await ChatRoom.aggregate([{

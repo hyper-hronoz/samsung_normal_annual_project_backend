@@ -4,6 +4,8 @@ const User = new Schema({
     email: { type: String, unique: true, lowercase: true, required: true },
     username: {type: String, required: true},
     password: {type: String, required: true},
+    isEmailConfirmed: {type: Boolean, required: true},
+
     userPhoto: {type: String, required: false},
     userLiked: {type: [], required: false},
     gender: {type: String},
@@ -16,7 +18,7 @@ const User = new Schema({
     facebookProfile: {type: String, required: false},
     instagramProfile: {type: String, required: false},
     notifications: {type: [], required: false},
-    isOnline: {type: Boolean, required: false}
+    isOnline: {type: Boolean, required: false},
 })
 
 module.exports = model("User", User);
