@@ -42,7 +42,7 @@ const userDataRouter = require("./router/userDataRouter");
 const authMiddlewaree = require("./middlewaree/authMiddlewaree");
 
 app.get("/", (req, res) => {
-  res.send("hello it works")
+  res.send("Сейчас ресурс находится на технических работах, зайдите посже пожалуйста, я пока 02.07 посижу часик - 2")
 })
 
 app.use(busboy());
