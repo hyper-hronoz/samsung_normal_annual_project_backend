@@ -146,6 +146,7 @@ class UserDataController {
 				_id: id
 			}, {
 				$set: {
+					"username": username,
 					"gender": gender,
 					"age": age,
 					"eyesColor": eyesColor,
